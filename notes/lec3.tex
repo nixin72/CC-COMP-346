@@ -1,0 +1,311 @@
+% Created 2019-09-24 Tue 19:48
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\date{\today}
+\title{}
+\hypersetup{
+ pdfauthor={},
+ pdftitle={},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.2 (Org mode 9.2.4)}, 
+ pdflang={English}}
+\begin{document}
+
+\tableofcontents
+
+```
+while (true) \{
+  flag[i] = true
+  turn = j
+  while (flag[j] \&\& turn == j) \{
+    // critical section
+    flag[i] = false
+    //remainder section
+  \}
+\}
+
+```
+
+\#\# Peterson's Solution
+\#\# Synchronization Hardware
+
+\begin{itemize}
+\item Many sys provide HW support for implementing the critical section code.
+\item Uniprocessors
+\begin{itemize}
+\item Code would execute wi/out preemption
+\item Too inefficient on multi-processor sys
+\begin{itemize}
+\item OSs using this not scalable
+\end{itemize}
+\end{itemize}
+\item Hardware support
+\begin{itemize}
+\item Memory barriers
+\item Hardware instructions
+\item Atomic variables
+\end{itemize}
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{ll}
+Hardware & SW + HW\\
+:------------------- & :----------\\
+Disable interrupts & mutex lock\\
+Atomic instructions & semaphonre\\
+-- test\textsubscript{and}\textsubscript{set} & monitor\\
+-- compare\textsubscript{and}\textsubscript{swap} & \\
+\end{tabular}
+\end{center}
+
+Users cannot block interrupts - must be kernel
+No I/O inside critical section code - don't block anything. Can have a ContextSwitch though
+Atomic: There may be a ContextSwitch, there may not be.
+
+\#\# Memory Barriers
+\begin{itemize}
+\item An instruction that forces any change in memory to be propagated to all other processes
+\item Memory model: mem guarantees a comp. arch. makes to application programs
+\begin{itemize}
+\item Strongly ordered: all mem mods of one processors is immediately visible to all other processes
+\item Weakly ordered: all mem mods of one process may not be immediately visible to all other processes
+\end{itemize}
+
+\item Could add a mem barrier to the following to ensure thread 1 outputs 100:
+\end{itemize}
+t1 now does:
+```
+while(!flag):
+  mem\textsubscript{barrier}()
+print x
+```
+
+t2 now does:
+```
+x = 100
+mem\textsubscript{barrier}()
+flag = true
+```
+
+\#\# Hardware Instructions
+Special HW instructions that \textbf{test-and-modify} the content of a word, or \textbf{swap} the contents of two words
+\begin{itemize}
+\item \textbf{\textbf{Test-and-set}} instruction
+\item \textbf{\textbf{Compare and swap}} instruction
+\end{itemize}
+
+\#\#\# test\textsubscript{and}\textsubscript{set} instruction
+```
+bool test\textsubscript{and}\textsubscript{set}(boolean* target) \{
+  bool rv = *target
+  *target = true
+  return rv
+\}
+```
+\begin{itemize}
+\item Executed atomically
+\item Returns the og value of the passed param
+\item Set the new val of passed param to true
+\end{itemize}
+
+\#\#\# compare\textsubscript{and}\textsubscript{swap}
+```
+int compare\textsubscript{and}\textsubscript{swap}(int* value, int expected, int new\textsubscript{val}) \{
+  int temp = *value
+
+  if (*value == expected)
+    *value = new\textsubscript{value}
+  return temp
+\}
+```
+\begin{itemize}
+\item exec atomicaaly
+\item Return the og val of the passes param `val`
+\item Set the var `val` the val of the passed param `new\textsubscript{val}`
+\end{itemize}
+
+\#\#\# Solution using test\textsubscript{and}\textsubscript{swap}
+\begin{itemize}
+\item Shared boolean variable `lock`, intialized to `false`
+\item Solution:
+\end{itemize}
+```
+do \{
+  while test\textsubscript{and}\textsubscript{set}(\&lock)
+    \emph{/ do nothing
+      /} crictical section
+    lock = false
+      // remainder section
+\} while true
+```
+Critical section problem:
+\begin{itemize}
+\item Satisfies Mutual exclusion problem
+\item Satisfied Progress problem
+\item Does NOT satisfy Bounded waiting problem
+\begin{itemize}
+\item One process can grab the same lock over and over again
+\item Process can starve.
+\item Will never enter critical section because it can never lock
+\item BUT, there's no deadlock or livelock
+\end{itemize}
+\end{itemize}
+
+\#\#\# Solution using compare\textsubscript{and}\textsubscript{swap}
+Shared int `lock` initialized to 0
+```
+while true:
+  while compare\textsubscript{and}\textsubscript{swap}(\&lock, 0, 1) != 0:
+    //do nothing
+
+  // critical section
+  lock = 0
+  //remainder section
+```
+
+\#\#\#\# Bounded waiting mutual-exclusion with compare\textsubscript{and}\textsubscript{swap}
+```
+while true:
+  waiting[i] = true
+  key = 1
+  while waiting[i] and key == 1:
+    key = compare\textsubscript{and}\textsubscript{swap}(\&lock, 0, 1)
+  waiting[i] = false
+
+//critical section
+
+j = (i+1) \% n
+while (j != i) and !waiting[j]:
+  j = (j + 1) \% n
+
+if j == i:
+  lock = 0
+else:
+  waiting[j] = false
+
+  //remainder section
+```
+\begin{itemize}
+\item Solves critical section problem
+\item Satisfies bounded waiting problem
+\item Has to wait (at most) for n-1 processes to grab the lock. Checks processes in a round-robin way to grant lock.
+\end{itemize}
+
+\#\# Atomic Variables
+\begin{itemize}
+\item Typically, instructions such as `compare\textsubscript{and}\textsubscript{swap}` are used as building blocks for other synchronization tools
+\item One tool is an atomic variable that provides atomic (uninteruptible) updates on basic data types such as ints and bools
+\item ex: the `increment()` operation on the atomic var `sequence` ensures `sequence` is incremented without interruption
+\end{itemize}
+`increment(\&sequence)`
+
+\#\#\# Consumer
+```py
+while true:
+  while counter == 0
+    // do nothing
+  next\textsubscript{consumed} = buffer[out]
+  out = (out + 1) \% BUFFER\textsubscript{SIZE}
+  counter--
+  //consume the item in next consumed
+```
+
+\#\#\# Race Conditions
+\begin{itemize}
+\item counter++
+\end{itemize}
+could be: `reg1 = count; reg1 = reg1 + 1; count = reg1`
+\begin{itemize}
+\item counter--
+\end{itemize}
+could be: `reg2 = count; reg2 = reg2 - 1; count = reg2`
+\begin{itemize}
+\item Consider:
+\end{itemize}
+s0 producer exec reg1 = counter
+s1 producer exec reg1  
+
+\begin{itemize}
+\item The `increment()` function can be implemented as:
+\end{itemize}
+```python
+void increment(atomic\textsubscript{int}* v):
+  int temp
+  do:
+    temp = *v
+  while temp != compare\textsubscript{and}\textsubscript{swap}(v, temp, temp+1)
+```
+
+\#\# Mutex Locks
+\begin{itemize}
+\item Previous solutions are complicated and generally inaccessbile to application programmers
+\item OS designers build software tools to solve critical section problem
+\item Simplest is Mutex Lock
+\item Protect a C.S by first `acquire()` a lock, then `release()` the lock
+\begin{itemize}
+\item bool var indicating if lock is available or not
+\end{itemize}
+\item Call to `acquire()` and `releae()` must be atomic
+\begin{itemize}
+\item Usually implemeted via a hardware atomic instructions such as compare$\backslash$\textsubscript{and}\textsubscript{swap}
+\end{itemize}
+\item But this solution requires \textbf{\textbf{Busy waiting}}
+\begin{itemize}
+\item This lock is therefore called a \textbf{\textbf{spinlock}}
+\end{itemize}
+\end{itemize}
+
+\#\#\# Definitions 
+```
+acquire()
+  while !available
+    // busy wait
+  available = false
+```
+
+``` python
+release()
+  available = true
+```
+
+these two funcs must be implemeted atomicaaly. Both test\textsubscript{and}\textsubscript{set} and compare\textsubscript{and}\textsubscript{swap} can be used to implement these functions.
+
+\#\# Semaphore
+\begin{itemize}
+\item Synchronization tool that provides more sophisticated ways (than mutex locks) for process to sync their activities
+\item Semaphore S - integer var
+\item Can only be accessed via two indivisible (atomic) operations 
+\begin{itemize}
+\item `wait()` and `signal()`
+\begin{itemize}
+\item (originally called P() and V())
+\end{itemize}
+\end{itemize}
+\item Definition of `wait()` and `signal()` operations
+\end{itemize}
+``` python
+wait(S) 
+  while S <= 0
+    // busy wait
+  S--
+```
+``` python
+
+signal(S):
+  S++
+```
+\end{document}
