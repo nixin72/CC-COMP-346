@@ -8,6 +8,7 @@ class CharStack {
 	private static int iSize = DEFAULT_SIZE;
 	private static int iTop = 3; // stack[0:9] with four defined values
 	private static char aCharStack[] = new char[] { 'a', 'b', 'c', 'd', '$', '$', '$', '$', '$', '$' };
+	private static long timesAccessed = 0;
 
 	public CharStack () {
 	}
@@ -18,10 +19,10 @@ class CharStack {
 
 		if (piSize != DEFAULT_SIZE) {
 			CharStack.aCharStack = new char[piSize];
-			// Fill in with letters of the alphabet and keep
-			// 6 free blocks
+
 			for (int i = 0; i < piSize - 6; i++)
 				CharStack.aCharStack[i] = (char) ('a' + i);
+
 			for (int i = 1; i <= 6; i++)
 				CharStack.aCharStack[piSize - i] = '$';
 
@@ -30,10 +31,14 @@ class CharStack {
 		}
 	}
 
+	public long getAccessCounter () {
+		return CharStack.timesAccessed;
+	}
+
 	/*
 	 * Picks a value from the top without modifying the stack
 	 */
-	public static char pick () throws CharStackEmptyException {
+	public static char peek () throws CharStackEmptyException {
 		if (iTop == -1)
 			throw new CharStackEmptyException();
 
@@ -43,26 +48,22 @@ class CharStack {
 	/*
 	 * Returns arbitrary value from the stack array
 	 */
-	public char getAt (int piPosition) throws CharStackInvalidAccessException {
+	public static char getAt (int piPosition) throws CharStackInvalidAccessException {
 		if (piPosition < 0 || piPosition >= iSize)
 			throw new CharStackInvalidAccessException();
 
+		CharStack.timesAccessed++;
 		return CharStack.aCharStack[piPosition];
 	}
 
-	/*
-	 * Standard push operation
-	 */
 	public static void push (char pcChar) throws CharStackFullException {
 		if (iTop == iSize - 1)
 			throw new CharStackFullException();
 
+		CharStack.timesAccessed++;
 		aCharStack[++iTop] = pcChar;
 	}
 
-	/*
-	 * Standard pop operation
-	 */
 	public static char pop () throws CharStackEmptyException {
 		if (iTop == -1)
 			throw new CharStackEmptyException();
@@ -70,6 +71,7 @@ class CharStack {
 		char cChar = aCharStack[iTop];
 		aCharStack[iTop--] = '$'; // Leave prev. value undefined
 
+		CharStack.timesAccessed++;
 		return cChar;
 	}
 
@@ -80,10 +82,5 @@ class CharStack {
 
 	public int getTop () {
 		return CharStack.iTop;
-	}
-
-	public String getAccessCounter () {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

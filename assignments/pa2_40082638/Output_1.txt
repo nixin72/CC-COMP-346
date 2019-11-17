@@ -1,0 +1,46 @@
+----------------------------------------------------
+Main thread starts executing.
+----------------------------------------------------
+Initial value of top = 3.
+Initial value of stack top = d.
+
+Main thread will now fork several threads.
+----------------------------------------------------
+Two Consumer threads have been created.
+Two Producer threads have been created.
+One CharStackProber thread has been created.
+
+Consumer thread [TID=2] starts executing.
+Consumer thread [TID=1] starts executing.
+Producer thread [TID=3] starts executing.
+Producer thread [TID=4] starts executing.
+CharStackProber thread [TID=5] starts executing.
+Consumer thread [TID=2] pops character = d
+Consumer thread [TID=1] pops character = c
+Producer thread [TID=3] pushes character = c
+Producer thread [TID=4] pushes character = d
+Stack S = ([a], [b], [c], [d], [$], [$], [$], [$], [$], [$])
+Consumer thread [TID=2] pops character = d
+Consumer thread [TID=1] pops character = c
+Producer thread [TID=3] pushes character = c
+Producer thread [TID=4] pushes character = d
+Stack S = ([a], [b], [c], [d], [$], [$], [$], [$], [$], [$])
+Consumer thread [TID=2] pops character = d
+Consumer thread [TID=1] pops character = c
+Producer thread [TID=3] pushes character = c
+Consumer thread [TID=1] terminates.
+Consumer thread [TID=2] terminates.
+Producer thread [TID=3] terminates.
+Producer thread [TID=4] pushes character = d
+Producer thread [TID=4] terminates.
+Stack S = ([a], [b], [c], [d], [$], [$], [$], [$], [$], [$])
+Stack S = ([a], [b], [c], [d], [$], [$], [$], [$], [$], [$])
+Stack S = ([a], [b], [c], [d], [$], [$], [$], [$], [$], [$])
+Stack S = ([a], [b], [c], [d], [$], [$], [$], [$], [$], [$])
+
+System terminates normally.
+----------------------------------------------------
+Final value of top = 3.
+Final value of stack top = d.
+Final value of stack top-1 = c.
+Stack access count = 73

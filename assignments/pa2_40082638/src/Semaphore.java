@@ -2,17 +2,17 @@ class Semaphore {
 	private int value;
 
 	public Semaphore (int value) {
-		this.value = value;
+		this.value = Math.abs(value);
 	}
 
 	public Semaphore () {
-		this(0);
+		this.value = 0;
 	}
 
 	public synchronized void Wait () {
 		this.value--;
 
-		while (this.value <= 0) {
+		if (this.value < 0) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -23,7 +23,7 @@ class Semaphore {
 	}
 
 	public synchronized void Signal () {
-		++this.value;
+		this.value++;
 		notify();
 	}
 
